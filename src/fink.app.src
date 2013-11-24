@@ -1,0 +1,12 @@
+{application, fink,
+ [
+  {description, "crashkeeper.com Erlang client"},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { fink_app, []}},
+  {env, []}
+ ]}.

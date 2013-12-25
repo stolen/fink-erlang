@@ -1,0 +1,1 @@
+-module(error_logger_fink).

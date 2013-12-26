@@ -67,6 +67,8 @@ handle_event({warning_report, _GLeader, _}, #state{warning_error = L} = State) -
 handle_call(_Request, State) ->
     {ok, ok, State}.
 
+handle_info({'EXIT', Fd, _Reason}, {Fd, _File, _Type}) ->
+    remove_handler;
 handle_info(_Info, State) ->
     {ok, State}.
 

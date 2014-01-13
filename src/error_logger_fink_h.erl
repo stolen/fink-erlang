@@ -9,7 +9,7 @@
 %% ------------------------------------------------------------------
 -export([init/1,
          handle_event/2,
-         handle_call/3,
+         handle_call/2,
          handle_info/2,
          terminate/2,
          code_change/3]).
@@ -29,6 +29,7 @@
                 url = undefined,
 
                 error = error,
+                warning_error = error,
                 info_msg = info,
                 warning_msg = warn,
                 error_report = error,
@@ -42,6 +43,7 @@
 
 init(Args) ->
     process_flag(trap_exit, true),
+    State = #state{},
     State1 = connect({State#state.protocol, State}),
     {ok, State1}.
 

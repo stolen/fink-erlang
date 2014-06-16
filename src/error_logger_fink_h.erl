@@ -4,17 +4,10 @@
 %-define(HOST, "base.api.crashkeeper.com").
 -define(HOST, "localhost").
 
-%% ------------------------------------------------------------------
-%% gen_event Function Exports
-%% ------------------------------------------------------------------
--export([init/1,
-         handle_event/2,
-         handle_call/2,
-         handle_info/2,
-         terminate/2,
-         code_change/3]).
 
--export([add_handler/0, add_handler/1]).
+%% ------------------------------------------------------------------
+%% Records
+%% ------------------------------------------------------------------
 
 -record(state, {identity,
                 level,
@@ -35,7 +28,17 @@
                 error_report = error,
                 info_report = info,
                 warning_report = warn}).
+%% ------------------------------------------------------------------
+%% gen_event Function Exports
+%% ------------------------------------------------------------------
+-export([init/1,
+         handle_event/2,
+         handle_call/2,
+         handle_info/2,
+         terminate/2,
+         code_change/3]).
 
+-export([add_handler/0, add_handler/1]).
 
 %%======================================
 %% gen_event Function Definitions
@@ -48,22 +51,27 @@ init(Args) ->
     {ok, State1}.
 
 
-handle_event({error, _GLeader, {_PID, Msg, Data}}, #state{error = L} = State) ->
-    R = ?MODULE:emit(L, Msg, Data),
+handle_event({error, Leader, Msg}, #state{error = L} = State) ->
+    R = ?MODULE:emit(error, Leader, L, Msg),
     {R, State};
-handle_event({info_msg, _GLeader, {_PID, Msg, Data}}, #state{info_msg = L} = State) ->
-    R = ?MODULE:emit(L, Msg, Data),
+handle_event({info_msg, Leader, Msg}, #state{info_msg = L} = State) ->
+    R = ?MODULE:emit(info_msg, Leader, L, Msg),
     {R, State};
-handle_event({warning_msg, _GLeader, {_PID, Msg, Data}}, #state{warning_msg = L} = State) ->
-    R = ?MODULE:emit(L, Msg, Data),
+handle_event({warning_msg, Leader, Msg}, #state{warning_msg = L} = State) ->
+    R = ?MODULE:emit(warning_msg, Leader, L, Msg),
     {R, State};
 
-handle_event({error_report, _GLeader, _}, #state{error_report = L} = State) ->
+handle_event({error_report, Leader, Msg}, #state{error_report = L} = State) ->
+    R = ?MODULE:emit(error_msg, Leader, L, Msg),
     {R, State};
-handle_event({info_report, _GLeader, _}, #state{info_report = L } = State) ->
+handle_event({info_report, Leader, Msg}, #state{info_report = L } = State) ->
+    R = ?MODULE:emit(info_report, Leader, L, Msg),
     {R, State};
-handle_event({warning_report, _GLeader, _}, #state{warning_error = L} = State) ->
+handle_event({warning_report, Leader, Msg}, #state{warning_error = L} = State) ->
+    R = ?MODULE:emit(warning_report, Leader, L, Msg),
     {R, State}.
+
+%                    {PID, Msg, Data}
 
 
 handle_call(_Request, State) ->
@@ -88,6 +96,10 @@ add_handler()     -> error_logger:add_report_handler(?MODULE, []).
 %% Internal Function Definitions
 %% ------------------------------------------------------------------
 
+emit(Type, Leader, L, {PID, Msg, Data} = M) ->
+    io:format("~p ~p ~p ~p", [Type, Leader, L, M]),
+    ok.
+
 connect({udp, #state{port = Port} = State}) ->
     case gen_udp:open(Port,
                       [binary, {active, true}]) of
@@ -106,8 +118,8 @@ connect({https, #state{public_key = PublicKey, secret_key = SecretKey, project =
 
 disconnect({udp, #state{socket = Socket} = _State}) ->
     case Socket of
-        Socket1 -> gen_udp:close(Socket1), ok;
-        _ -> ok
+        undefined -> ok;
+        Socket1 -> gen_udp:close(Socket1), ok
     end;
 disconnect({_, _State}) ->
     ok.

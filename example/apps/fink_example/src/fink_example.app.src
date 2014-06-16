@@ -1,0 +1,30 @@
+{application, fink_example,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  compiler,
+                  syntax_tools,
+                  inets
+                 ]},
+  {mod, { fink_example_app, []}},
+  {env, [
+     {lager_fink_backend, [
+                        {identity, <<"x">>},
+                        {level, info},
+                        {retry_times, 5},
+                        {retry_interval, 3},
+                        {protocol, udp},
+                        {public_key, "88ce5225fdeff6618f7f19d31b405f8d"},
+                        {secret_key, "1c26593735770970d19d7e65e752212f"},
+                        {project, "ck_internal"}
+                       ]
+   }
+  ]}
+ ]}.
+
+%gen_event:add_handler(lager_event, lager_fink_backend, [{identity, <<"x">>}, {level, info}, {retry_times, 5}, {retry_interval, 3}, {protocol, udp}, {public_key, "88ce5225fdeff6618f7f19d31b405f8d"}, {secret_key, "1c26593735770970d19d7e65e752212f"}, {project, "ck_internal"}]).
+%io_lib:format("Crashkeeper fink_ts=~p, fink_client=~s, fink_pkey=~s, fink_skey=~s",["63554907285","lager_fink_backend/0.0.1","88ce5225fdeff6618f7f19d31b405f8d","1c26593735770970d19d7e65e752212f"]).

@@ -14,6 +14,7 @@
                 port = 31338,
                 socket = undefined,
                 url = undefined,
+                hostname = undefined,
 
                 error = error,
                 warning_error = error,

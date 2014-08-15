@@ -1,8 +1,6 @@
 -module(fink_lib).
 
 -define(CLIENT, "lager_fink_backend/0.0.1").
-%-define(HOST, "crashkeeper.com/api").
--define(HOST, "localhost/api").
 
 %% ------------------------------------------------------------------
 %% Includes
@@ -16,8 +14,8 @@
          prepare_message/0,
          prepare_message/7,
          logger_emit/4,
-         emit/9,
          emit/8,
+         emit/9,
          connect/1,
          disconnect/1,
          auth_header/3
@@ -38,6 +36,7 @@ new_state() ->
        public_key     = application:get_env(fink, public_key),
        secret_key     = application:get_env(fink, secret_key),
        project        = application:get_env(fink, project),
+       hostname       = application:get_env(fink, hostname),
        port           = application:get_env(fink, port, 31338)
       }.
 
@@ -83,7 +82,7 @@ emit(Level, Date, Time, LevelStr, Location, Message, #state{retry_interval = Ret
 emit(protocol, udp, Level, Date, Time, LevelStr, Location, Message, #state{socket = Socket} = State) ->
     M = prepare_message(Level, Date, Time, LevelStr, Location, Message, State),
     Msg = io_lib:format("~s\n\n~s", [auth_header(Date, Time, State), M]),
-    case gen_udp:send(Socket, ?HOST, 31337, Msg) of
+    case gen_udp:send(Socket, State#state.hostname, 31337, Msg) of
         {error, Reason} ->
             io:format("Error fink sending: Reason: ~w State: ~p~n", [Reason, State]),
             {error, Reason};
@@ -119,9 +118,9 @@ connect({udp, #state{port = Port} = State}) ->
             connect({http, State#state{protocol = http}})
     end;
 connect({http, #state{public_key = PublicKey, secret_key = SecretKey, project = Project} = State}) ->
-    State#state{url = io_lib:format("http://~s:~s@~s/~s/push", [PublicKey, SecretKey, ?HOST, Project])};
+    State#state{url = io_lib:format("http://~s:~s@~s/~s/push", [PublicKey, SecretKey, State#state.hostname, Project])};
 connect({https, #state{public_key = PublicKey, secret_key = SecretKey, project = Project} = State}) ->
-    State#state{url = io_lib:format("https://~s:~s@~s/~s/push", [PublicKey, SecretKey, ?HOST, Project])}.
+    State#state{url = io_lib:format("https://~s:~s@~s/~s/push", [PublicKey, SecretKey, State#state.hostname, Project])}.
 
 disconnect({udp, #state{socket = Socket} = _State}) ->
     case Socket of

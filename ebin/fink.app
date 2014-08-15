@@ -1,0 +1,10 @@
+{application,fink,
+             [{description,"Fink [crashkeeper.com] Erlang client"},
+              {vsn,"1"},
+              {registered,[lager_fink_backend,error_logger_fink_h,fink_app,
+                           fink_sup]},
+              {modules,[error_logger_fink_h,fink_app,fink_sup,
+                        lager_fink_backend]},
+              {applications,[kernel,stdlib,goldrush,lager]},
+              {mod,{fink_app,[]}},
+              {env,[]}]}.

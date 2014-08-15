@@ -37,16 +37,8 @@ start_link() ->
 %% gen_server Function Definitions
 %% ------------------------------------------------------------------
 
-init(Args) ->
-    State = #state{identity = proplists:get_value(id, Args),
-                   level = lager_util:level_to_num(proplists:get_value(level, Args, info)),
-                   retry_interval = proplists:get_value(retry_interval, Args, 5),
-                   retry_times = proplists:get_value(retry_times, Args, 5),
-                   protocol = proplists:get_value(protocol, Args, http),
-                   public_key = proplists:get_value(public_key, Args),
-                   secret_key = proplists:get_value(secret_key, Args),
-                   project = proplists:get_value(project, Args),
-                   port = proplists:get_value(port, Args, 31338)},
+init(_) ->
+    State = fink_lib:new_state(),
     State1 = fink_lib:connect({State#state.protocol, State}),
     {ok, State1}.
 

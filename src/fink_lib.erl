@@ -12,6 +12,7 @@
 
 
 -export([
+         new_state/0,
          prepare_message/0,
          prepare_message/7,
          logger_emit/4,
@@ -25,6 +26,20 @@
 %% ------------------------------------------------------------------
 %% Internal Function Definitions
 %% ------------------------------------------------------------------
+
+new_state() ->
+    #state{
+       identity       = application:get_env(fink, id),
+       level          = lager_util:level_to_num(
+                          application:get_env(fink, level, info)),
+       retry_interval = application:get_env(fink, retry_interval, 5),
+       retry_times    = application:get_env(fink, retry_times, 5),
+       protocol       = application:get_env(fink, protocol, http),
+       public_key     = application:get_env(fink, public_key),
+       secret_key     = application:get_env(fink, secret_key),
+       project        = application:get_env(fink, project),
+       port           = application:get_env(fink, port, 31338)
+      }.
 
 prepare_message(Level, Date, Time, _LevelStr, _Location, Message, #state{project = Project} = _State) ->
     % int, str, str, str, pid, message, #state

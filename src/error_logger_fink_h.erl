@@ -38,7 +38,7 @@ add_handler()     -> error_logger:add_report_handler(?MODULE, []).
 
 init(_Args) ->
     process_flag(trap_exit, true),
-    State = #state{},
+    State = fink_lib:new_state(),
     State1 = fink_lib:connect({State#state.protocol, State}),
     {ok, State1}.
 

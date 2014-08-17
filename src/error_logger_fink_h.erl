@@ -42,24 +42,24 @@ init(_Args) ->
     State1 = fink_lib:connect({State#state.protocol, State}),
     {ok, State1}.
 
-handle_event({error, Leader, Msg}, #state{error = L} = State) ->
-    R = fink_lib:logger_emit(error, Leader, L, Msg),
+handle_event({error, _Leader, Msg}, #state{error = Level} = State) ->
+    R = fink_lib:logger_emit(Level, Msg, State),
     {R, State};
-handle_event({info_msg, Leader, Msg}, #state{info_msg = L} = State) ->
-    R = fink_lib:logger_emit(info_msg, Leader, L, Msg),
+handle_event({info_msg, _Leader, Msg}, #state{info_msg = Level} = State) ->
+    R = fink_lib:logger_emit(Level, Msg, State),
     {R, State};
-handle_event({warning_msg, Leader, Msg}, #state{warning_msg = L} = State) ->
-    R = fink_lib:logger_emit(warning_msg, Leader, L, Msg),
+handle_event({warning_msg, _Leader, Msg}, #state{warning_msg = Level} = State) ->
+    R = fink_lib:logger_emit(Level, Msg, State),
     {R, State};
 
-handle_event({error_report, Leader, Msg}, #state{error_report = L} = State) ->
-    R = fink_lib:logger_emit(error_msg, Leader, L, Msg),
+handle_event({error_report, _Leader, Msg}, #state{error_report = Level} = State) ->
+    R = fink_lib:logger_emit(Level, Msg, State),
     {R, State};
-handle_event({info_report, Leader, Msg}, #state{info_report = L } = State) ->
-    R = fink_lib:logger_emit(info_report, Leader, L, Msg),
+handle_event({info_report, _Leader, Msg}, #state{info_report = Level} = State) ->
+    R = fink_lib:logger_emit(Level, Msg, State),
     {R, State};
-handle_event({warning_report, Leader, Msg}, #state{warning_error = L} = State) ->
-    R = fink_lib:logger_emit(warning_report, Leader, L, Msg),
+handle_event({warning_report, _Leader, Msg}, #state{warning_error = Level} = State) ->
+    R = fink_lib:logger_emit(Level, Msg, State),
     {R, State}.
 
 % {PID, Msg, Data}

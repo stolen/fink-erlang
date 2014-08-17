@@ -9,68 +9,116 @@
 -include("fink.hrl").
 
 
--export([
-         new_state/0,
-         prepare_message/0,
-         prepare_message/7,
-         logger_emit/4,
-         emit/8,
-         emit/9,
-         connect/1,
-         disconnect/1,
-         auth_header/3
-        ]).
+%% -export([
+%%          new_state/0,
+%%          prepare_message/0,
+%%          prepare_message/7,
+%%          logger_emit/4,
+%%          emit/8,
+%%          emit/9,
+%%          connect/1,
+%%          disconnect/1,
+%%          auth_header/3,
+%%          get_settings/1,
+%%          get_settings/2
+%%         ]).
+
+-compile(export_all).
 
 %% ------------------------------------------------------------------
 %% Internal Function Definitions
 %% ------------------------------------------------------------------
 
+iso_8601_fmt(DateTime) ->
+    % https://erlangcentral.org/wiki/index.php?title=Converting_Between_struct:time_and_ISO8601_Format
+    {{Year,Month,Day},{Hour,Min,Sec}} = DateTime,
+    io_lib:format("~4.10.0B-~2.10.0B-~2.10.0B ~2.10.0B:~2.10.0B:~2.10.0B",
+        [Year, Month, Day, Hour, Min, Sec]).
+
+get_settings(Name)          -> get_settings(Name, undefined).
+get_settings(Name, Default) ->
+    case application:get_env(fink, Name, Default) of
+        {ok, Value} -> Value;
+        V           -> V
+    end.
+
 new_state() ->
     #state{
-       identity       = application:get_env(fink, id),
-       level          = lager_util:level_to_num(
-                          application:get_env(fink, level, info)),
-       retry_interval = application:get_env(fink, retry_interval, 5),
-       retry_times    = application:get_env(fink, retry_times, 5),
-       protocol       = application:get_env(fink, protocol, http),
-       public_key     = application:get_env(fink, public_key),
-       secret_key     = application:get_env(fink, secret_key),
-       project        = application:get_env(fink, project),
-       hostname       = application:get_env(fink, hostname),
-       port           = application:get_env(fink, port, 31338)
+       identity       = get_settings(id),
+       level          = list_to_atom(get_settings(level, "info")),
+       retry_interval = get_settings(retry_interval, 5),
+       retry_times    = get_settings(retry_times, 5),
+       protocol       = list_to_atom(get_settings(protocol, "https")),
+       public_key     = get_settings(public_key),
+       secret_key     = get_settings(secret_key),
+       project        = get_settings(project),
+       hostname       = get_settings(hostname),
+       port           = get_settings(port, 31338)
       }.
 
-prepare_message(Level, Date, Time, _LevelStr, _Location, Message, #state{project = Project} = _State) ->
-    % int, str, str, str, pid, message, #state
+prepare_message(Level, Location, Message, State) ->
+    prepare_message(Level, Location, Message, [], State).
+
+prepare_message(Level, Location, Message, Params, State) ->
+    Datetime = iso_8601_fmt(erlang:localtime()),
+    prepare_message({Level, Datetime, Location, Message, Params, State}).
+
+prepare_message(Level, Date, Time, Location, Message, State) ->
     Datetime = io_lib:format("~s ~s", [Date, Time]),
-    {ok, Paths} = erl_prim_loader:get_path(),
-    {Platform, Kernel} = os:type(),
-    base64:encode(zlib:compress(jsx:to_json([{level,       atom_to_binary(lager_util:num_to_level(Level), latin1)},
-                                             {platrofm,    <<"erlang">>},
-                                             {paths,       Paths},
-                                             %% {module_info, os:module_info()},
-                                             %% {stacktrace,  erlang:get_stacktrace()},
-                                             {version,     binary:list_to_bin(element(1, init:script_id()))},
-                                             {memory,      erlang:memory()},
-                                             {node,        atom_to_binary(erlang:node(), latin1)},
-                                             {pid,         binary:list_to_bin(os:getpid())},
-                                             {os_type,     io_lib:format("~s~s", [Platform, Kernel])},
-                                             {pwd,         binary:list_to_bin(os:getenv("PWD"))},
-                                             {project,     binary:list_to_bin(Project)},
-                                             {datetime,    binary:list_to_bin(Datetime)},
-                                             {message,     binary:list_to_bin(Message)}]))).
+    prepare_message({Level, Datetime, Location, Message, [], State}).
 
-prepare_message() ->
-    lager:log(info, 100, "test").
+prepare_message({Level, Datetime, _Location, Message, Params, #state{project = Project}}) ->
+    %% {ok, Paths} = erl_prim_loader:get_path(),
+    %% {Platform, Kernel} = os:type(),
+    {ok, Hostname} = inet:gethostname(),
+    Extra = [
+               {memory,      erlang:memory()},
+               {node,        atom_to_binary(erlang:node(), latin1)},
+               {pid,         binary:list_to_bin(os:getpid())}
+              ] ++ Params,
+    base64:encode(zlib:compress(
+                    jsx:encode([{level,     atom_to_binary(Level, latin1)},
+                                            {platform,    <<"erlang">>},
+                                            %% {paths,       lists:map(fun list_to_binary/1, Paths)},
+                                            %% {module_info, os:module_info()},
+                                            %% {stacktrace,  erlang:get_stacktrace()},
+                                            {server_name, binary:list_to_bin(Hostname)},
+                                            {version,     binary:list_to_bin(element(1, init:script_id()))},
+
+                                            %% {os_type,     io_lib:format("~s~s", [Platform, Kernel])},
+                                            {pwd,         binary:list_to_bin(os:getenv("PWD"))},
+                                            {project,     binary:list_to_bin(Project)},
+                                            {datetime,    binary:list_to_bin(Datetime)},
+                                            {extra,       Extra},
+                                            {message,     Message}])
+                   ))
+.
+
+logger_emit(Level, {_PID, Msg, Params}, State) ->
+    Val = case Params of
+              [] -> io_lib:format(Msg, Params);
+              _  -> Msg
+          end,
+    Message = prepare_message(Level, "", Val, [], State),
+    emit(Level, "", Message, State).
 
 
-logger_emit(Type, Leader, L, {_PID, _Msg, _Data} = M) ->
-    io:format("~p ~p ~p ~p", [Type, Leader, L, M]),
-    ok.
+emit(Level, Location, Message, State) ->
+    emit(Level, Location, Message, [], State).
 
+emit(Level, Location, Message, Params, #state{url = Url} = State) ->
+    Headers = [{"X-Auth", auth_header(State)}],
+    Msg = prepare_message(Level, Location, Message, Params, State),
+    io:format("~p~n", [binary:bin_to_list(Url)]),
+    Request = {binary:bin_to_list(Url), Headers, "application/json", Msg},
+    case httpc:request(post, Request, [], [{body_format, binary}]) of
+        {ok, R}         -> R;
+        {error, Reason} -> {error, Reason}
+    end.
 
 emit(_, _, _, _, _, _, _State, 0) ->
     ok;
+
 emit(Level, Date, Time, LevelStr, Location, Message, #state{retry_interval = RetryInterval, protocol = Protocol} = State, Rt) ->
     case emit(protocol, Protocol, Level, Date, Time, LevelStr, Location, Message, State) of
         ok         -> ok;
@@ -78,25 +126,25 @@ emit(Level, Date, Time, LevelStr, Location, Message, #state{retry_interval = Ret
                       emit(Level, Date, Time, LevelStr, Location, Message, State, Rt - 1)
     end.
 
-emit(protocol, udp, Level, Date, Time, LevelStr, Location, Message, #state{socket = Socket} = State) ->
-    M = prepare_message(Level, Date, Time, LevelStr, Location, Message, State),
-    Msg = io_lib:format("~s\n\n~s", [auth_header(Date, Time, State), M]),
+emit(protocol, udp, _Level, Date, Time, LevelStr, Location, Message, #state{socket = Socket} = State) ->
+    M = prepare_message(LevelStr, Date, Time, Location, Message, State),
+    Msg = io_lib:format("~s\n\n~s", [auth_header(State), M]),
     case gen_udp:send(Socket, State#state.hostname, 31337, Msg) of
         {error, Reason} -> io:format("Error fink sending: Reason: ~w State: ~p~n", [Reason, State]),
                            {error, Reason};
         _               -> ok
     end;
 
-emit(protocol, _, Level, Date, Time, LevelStr, Location, Message, #state{url = Url} = State) ->
-    Headers = [{"X-Auth", auth_header(Date, Time, State)}],
-    Msg = prepare_message(Level, Date, Time, LevelStr, Location, Message, State),
+emit(protocol, _, _Level, Date, Time, LevelStr, Location, Message, #state{url = Url} = State) ->
+    Headers = [{"X-Auth", auth_header(State)}],
+    Msg = prepare_message(LevelStr, Date, Time, Location, Message, State),
     Request = {Url, Headers, "application/json", Msg},
     case httpc:request(post, Request, [], [{body_format, binary}]) of
         {ok, _}         -> ok;
         {error, Reason} -> {error, Reason}
     end.
 
-auth_header(_Date, _Time, #state{public_key = PublicKey, secret_key = SecretKey} = _State) ->
+auth_header(#state{public_key = PublicKey, secret_key = SecretKey}) ->
     io_lib:format(
       "Crashdump fink_ts=~p, fink_client=~s, fink_pkey=~s, fink_skey=~s",
       [calendar:datetime_to_gregorian_seconds(calendar:universal_time()), ?CLIENT, PublicKey, SecretKey]
@@ -109,12 +157,12 @@ connect({udp, #state{port = Port} = State}) ->
         {ok, Socket}        -> State#state{socket = Socket};
         {error, eaddrinuse} -> connect({udp, State#state{port = Port + 1}});
         {error, Reason}     -> io:format("Error fink connect using udp: Reason: ~p State: ~p~n", [Reason, State]),
-                               connect({http, State#state{protocol = http}})
+                               connect({http, State#state{protocol = https}})
     end;
-connect({http, #state{public_key = PublicKey, secret_key = SecretKey, project = Project} = State}) ->
-    State#state{url = io_lib:format("http://~s:~s@~s/api/~s/push", [PublicKey, SecretKey, State#state.hostname, Project])};
-connect({https, #state{public_key = PublicKey, secret_key = SecretKey, project = Project} = State}) ->
-    State#state{url = io_lib:format("https://~s:~s@~s/api/~s/push", [PublicKey, SecretKey, State#state.hostname, Project])}.
+connect({http, #state{project = Project} = State}) ->
+    State#state{url = list_to_binary(io_lib:format("http://~s/api/~s/push", [State#state.hostname, Project]))};
+connect({https, #state{project = Project} = State}) ->
+    State#state{url = list_to_binary(io_lib:format("https://~s/api/~s/push", [State#state.hostname, Project]))}.
 
 disconnect({udp, #state{socket = Socket}}) ->
     case Socket of

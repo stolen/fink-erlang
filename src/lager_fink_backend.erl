@@ -67,7 +67,7 @@ code_change(_OldVsn, State, _Extra) ->
 handle_event({log, Level, {Date, Time}, [LevelStr, Location, Message]},
              #state{retry_times = RetryTimes} = State)
   when Level =< State#state.level ->
-    spawn(fink_lib, emit, [Level, Date, Time, LevelStr, Location, Message, State, RetryTimes]),
+    spawn(fink_lib, emit, [lager_util:num_to_level(Level), Date, Time, LevelStr, Location, Message, State, RetryTimes]),
     {ok, State};
 
 handle_event(_Event, State) ->

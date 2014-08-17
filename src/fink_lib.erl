@@ -100,7 +100,8 @@ logger_emit(Level, {_PID, Msg, Params}, State) ->
               _  -> Msg
           end,
     Message = prepare_message(Level, "", Val, [], State),
-    emit(Level, "", Message, State).
+    emit(Level, "", Message, State),
+    ok.
 
 
 emit(Level, Location, Message, State) ->

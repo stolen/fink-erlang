@@ -73,19 +73,17 @@ emit(_, _, _, _, _, _, _State, 0) ->
     ok;
 emit(Level, Date, Time, LevelStr, Location, Message, #state{retry_interval = RetryInterval, protocol = Protocol} = State, Rt) ->
     case emit(protocol, Protocol, Level, Date, Time, LevelStr, Location, Message, State) of
-        ok -> ok;
-        {error, _} ->
-            timer:sleep(RetryInterval * 1000),
-            emit(Level, Date, Time, LevelStr, Location, Message, State, Rt - 1)
+        ok         -> ok;
+        {error, _} -> timer:sleep(RetryInterval * 1000),
+                      emit(Level, Date, Time, LevelStr, Location, Message, State, Rt - 1)
     end.
 
 emit(protocol, udp, Level, Date, Time, LevelStr, Location, Message, #state{socket = Socket} = State) ->
     M = prepare_message(Level, Date, Time, LevelStr, Location, Message, State),
     Msg = io_lib:format("~s\n\n~s", [auth_header(Date, Time, State), M]),
     case gen_udp:send(Socket, State#state.hostname, 31337, Msg) of
-        {error, Reason} ->
-            io:format("Error fink sending: Reason: ~w State: ~p~n", [Reason, State]),
-            {error, Reason};
+        {error, Reason} -> io:format("Error fink sending: Reason: ~w State: ~p~n", [Reason, State]),
+                           {error, Reason};
         _               -> ok
     end;
 
@@ -107,22 +105,18 @@ auth_header(_Date, _Time, #state{public_key = PublicKey, secret_key = SecretKey}
 
 
 connect({udp, #state{port = Port} = State}) ->
-    case gen_udp:open(Port,
-                      [binary, {active, true}]) of
-        {ok, Socket} ->
-            State#state{socket = Socket};
-        {error, eaddrinuse} ->
-            connect({udp, State#state{port = Port + 1}});
-        {error, Reason} ->
-            io:format("Error fink connect using udp: Reason: ~w State: ~p~n", [Reason, State]),
-            connect({http, State#state{protocol = http}})
+    case gen_udp:open(Port, [binary, {active, true}]) of
+        {ok, Socket}        -> State#state{socket = Socket};
+        {error, eaddrinuse} -> connect({udp, State#state{port = Port + 1}});
+        {error, Reason}     -> io:format("Error fink connect using udp: Reason: ~p State: ~p~n", [Reason, State]),
+                               connect({http, State#state{protocol = http}})
     end;
 connect({http, #state{public_key = PublicKey, secret_key = SecretKey, project = Project} = State}) ->
-    State#state{url = io_lib:format("http://~s:~s@~s/~s/push", [PublicKey, SecretKey, State#state.hostname, Project])};
+    State#state{url = io_lib:format("http://~s:~s@~s/api/~s/push", [PublicKey, SecretKey, State#state.hostname, Project])};
 connect({https, #state{public_key = PublicKey, secret_key = SecretKey, project = Project} = State}) ->
-    State#state{url = io_lib:format("https://~s:~s@~s/~s/push", [PublicKey, SecretKey, State#state.hostname, Project])}.
+    State#state{url = io_lib:format("https://~s:~s@~s/api/~s/push", [PublicKey, SecretKey, State#state.hostname, Project])}.
 
-disconnect({udp, #state{socket = Socket} = _State}) ->
+disconnect({udp, #state{socket = Socket}}) ->
     case Socket of
         undefined -> ok;
         Socket1 -> gen_udp:close(Socket1), ok

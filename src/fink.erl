@@ -17,7 +17,10 @@ fcatch(Fun, Success) ->
     try
         Fun()
     catch E:R ->
-        Message = io_lib:format("{~p, ~p, ~p}", [E, R, erlang:get_stacktrace()]),
+        Message = [{title, ""},
+                   {error, io_lib:format("~p", [E])},
+                   {reason, io_lib:format("~p", [R])},
+                   {stacktrace, binary:list_to_bin(io_lib:format("~p", [erlang:get_stacktrace()]))}],
         ?MODULE:push(Message),
         Success()
     end.

@@ -88,9 +88,9 @@ prepare_message({Level, Datetime, _Location, Message, Params, #state{project = P
                                    %% {os_type,     io_lib:format("~s~s", [Platform, Kernel])},
                                    {pwd,         binary:list_to_bin(os:getenv("PWD"))},
                                    {project,     binary:list_to_bin(Project)},
-                                   {datetime,    binary:list_to_bin(Datetime)},
+                                   {timestamp,   binary:list_to_bin(Datetime)},
                                    {extra,       Extra},
-                                   {message,     wf:to_binary(Message)}
+                                   {message,     Message}
                                   ]
                                  ))).
 

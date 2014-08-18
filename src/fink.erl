@@ -9,34 +9,16 @@
 
 -compile(export_all).
 
-
-message(Message) ->
-    message(Message, [], {undefined, undefined}).
-
-message(Message, Params) ->
-    message(Message, Params, {undefined, undefined}).
-
-message(Message, Params, {Module, Line}) ->
-    %io:format("~p ~p ~p~n", [erlang:get_stacktrace(), ?MODULE:module_info(), process_info(self(), backtrace)]).
-    try
-        1/0
-        %throw("121")
-    catch E:R ->
-            %% {_, E} = process_info(self(), backtrace),
-            %% io:format("~p ~s~n", [ E])
-            io:format("~p ~p ~p~n", [E, R, erlang:get_stacktrace()])
-    end.
-
 fcatch(Fun) ->
+    fcatch(Fun, fun() -> error end).
+
+fcatch(Fun, Success) ->
     try
         Fun()
     catch E:R ->
-        _Module = [], % ?MODULE:module_info(),
-        % Process = process_info(self(), current_stacktrace),
-        io:format("~p ~p ~p ~p ~p~n", [
-                                       E, R, erlang:get_stacktrace(), ?LINE, ?MODULE
-                                      ]),
-        error
+        Message = io_lib:format("{~p, ~p, ~p}", [E, R, erlang:get_stacktrace()]),
+        ?MODULE:push(Message),
+        Success()
     end.
 
 

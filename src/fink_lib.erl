@@ -76,23 +76,23 @@ prepare_message({Level, Datetime, _Location, Message, Params, #state{project = P
                {node,        atom_to_binary(erlang:node(), latin1)},
                {pid,         binary:list_to_bin(os:getpid())}
               ] ++ Params,
-    base64:encode(zlib:compress(
-                    jsx:encode([{level,     atom_to_binary(Level, latin1)},
-                                            {platform,    <<"erlang">>},
-                                            %% {paths,       lists:map(fun list_to_binary/1, Paths)},
-                                            %% {module_info, os:module_info()},
-                                            %% {stacktrace,  erlang:get_stacktrace()},
-                                            {server_name, binary:list_to_bin(Hostname)},
-                                            {version,     binary:list_to_bin(element(1, init:script_id()))},
+    base64:encode(zlib:compress(jsx:encode(
+                                  [{level,     atom_to_binary(Level, latin1)},
+                                   {platform,    <<"erlang">>},
+                                   %% {paths,       lists:map(fun list_to_binary/1, Paths)},
+                                   %% {module_info, os:module_info()},
+                                   %% {stacktrace,  erlang:get_stacktrace()},
+                                   {server_name, binary:list_to_bin(Hostname)},
+                                   {version,     binary:list_to_bin(element(1, init:script_id()))},
 
-                                            %% {os_type,     io_lib:format("~s~s", [Platform, Kernel])},
-                                            {pwd,         binary:list_to_bin(os:getenv("PWD"))},
-                                            {project,     binary:list_to_bin(Project)},
-                                            {datetime,    binary:list_to_bin(Datetime)},
-                                            {extra,       Extra},
-                                            {message,     Message}])
-                   ))
-.
+                                   %% {os_type,     io_lib:format("~s~s", [Platform, Kernel])},
+                                   {pwd,         binary:list_to_bin(os:getenv("PWD"))},
+                                   {project,     binary:list_to_bin(Project)},
+                                   {datetime,    binary:list_to_bin(Datetime)},
+                                   {extra,       Extra},
+                                   {message,     wf:to_binary(Message)}
+                                  ]
+                                 ))).
 
 logger_emit(Level, {_PID, Msg, Params}, State) ->
     Val = case Params of

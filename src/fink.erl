@@ -9,20 +9,32 @@
 
 -compile(export_all).
 
+message(throw, Reason, _) ->
+    io_lib:format("throw(~p)", [Reason]);
+message(error, Type, Stacktrace) ->
+    [{Module, Operator, Args, _}|_Stack] = Stacktrace,
+    Args1 = lists:last(io_lib:format("~p", [Args])),
+    Args2 = string:sub_string(Args1, 2, string:len(Args1) - 1),
+    Msg = io_lib:format("~s - ~p:~p(~s)~n", [Type, Module, Operator, Args2]),
+    re:replace(Msg, "\n", "", [global]);
+message(Error, Reason, _Sx) ->
+    io_lib:format("~s -> ~s", [Error, Reason]).
 
 fcatch(Fun) ->
-    fcatch(Fun, fun() -> error end).
+    fcatch(Fun, fun(_, _, _) -> error end).
 
-fcatch(Fun, Success) ->
+fcatch(Fun, OnError) ->
     try
         Fun()
-    catch E:R ->
-        Message = [{title, ""},
-                   {error, io_lib:format("~p", [E])},
-                   {reason, io_lib:format("~p", [R])},
-                   {stacktrace, binary:list_to_bin(io_lib:format("~p", [erlang:get_stacktrace()]))}],
+    catch Error:Reason ->
+        Stacktrace = erlang:get_stacktrace(),
+        Msg = message(Error, Reason, Stacktrace),
+        Message = [{title,  list_to_binary(Msg)},
+                   {error,  lists:last(io_lib:format("~s", [Error]))},
+                   {reason, lists:last(io_lib:format("~s", [Reason]))},
+                   {stacktrace, binary:list_to_bin(io_lib:format("~p", [Stacktrace]))}],
         ?MODULE:push(Message),
-        Success()
+        OnError(Error, Reason, Stacktrace)
     end.
 
 

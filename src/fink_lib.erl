@@ -1,6 +1,7 @@
 -module(fink_lib).
 
 -define(CLIENT, "lager_fink_backend/0.0.1").
+-define(API_VERSION, "v1").
 
 %% ------------------------------------------------------------------
 %% Includes
@@ -53,7 +54,7 @@ new_state() ->
        secret_key     = get_settings(secret_key),
        project        = get_settings(project),
        hostname       = get_settings(hostname),
-       port           = get_settings(port, 31338)
+       port           = 31338
       }.
 
 prepare_message(Level, Location, Message, State) ->
@@ -161,9 +162,9 @@ connect({udp, #state{port = Port} = State}) ->
                                connect({http, State#state{protocol = https}})
     end;
 connect({http, #state{project = Project} = State}) ->
-    State#state{url = list_to_binary(io_lib:format("http://~s/api/~s/push", [State#state.hostname, Project]))};
+    State#state{url = list_to_binary(io_lib:format("http://~s/api/~s/~s/push", [State#state.hostname, ?API_VERSION, Project]))};
 connect({https, #state{project = Project} = State}) ->
-    State#state{url = list_to_binary(io_lib:format("https://~s/api/~s/push", [State#state.hostname, Project]))}.
+    State#state{url = list_to_binary(io_lib:format("https://~s/api/~s/~s/push", [State#state.hostname, ?API_VERSION, Project]))}.
 
 disconnect({udp, #state{socket = Socket}}) ->
     case Socket of

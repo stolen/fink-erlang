@@ -111,7 +111,6 @@ emit(Level, Location, Message, State) ->
 emit(Level, Location, Message, Params, #state{url = Url} = State) ->
     Headers = [{"X-Auth", auth_header(State)}],
     Msg = prepare_message(Level, Location, Message, Params, State),
-    io:format("~p~n", [binary:bin_to_list(Url)]),
     Request = {binary:bin_to_list(Url), Headers, "application/json", Msg},
     case httpc:request(post, Request, [], [{body_format, binary}]) of
         {ok, R}         -> R;

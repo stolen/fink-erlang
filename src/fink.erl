@@ -30,9 +30,9 @@ fcatch(Fun, OnError) ->
         Stacktrace = erlang:get_stacktrace(),
         Msg = message(Error, Reason, Stacktrace),
         Message = [{title,  list_to_binary(Msg)},
-                   {error,  lists:last(io_lib:format("~s", [Error]))},
-                   {reason, lists:last(io_lib:format("~s", [Reason]))},
-                   {stacktrace, binary:list_to_bin(io_lib:format("~p", [Stacktrace]))}],
+                   {error,  list_to_binary(io_lib:format("~s", [Error]))},
+                   {reason, list_to_binary(io_lib:format("~s", [Reason]))},
+                   {stacktrace, list_to_binary(io_lib:format("~p", [Stacktrace]))}],
         ?MODULE:push(Message),
         OnError(Error, Reason, Stacktrace)
     end.

@@ -42,5 +42,11 @@ configure
 ---------
 
     >application:load(fink),
-    >application:set_env(fink, projkect, "project_name"),
+    >application:set_env(fink, project, "project_name"),
     >application:load(start).
+
+
+Configure N2O for to catch all exceptions to crashdump
+------------------------------------------------------
+
+    {n2o, [{erroring, n2o_fink}]}.

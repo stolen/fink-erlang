@@ -1,6 +1,6 @@
 {application, fink,
  [
-  {description, "Fink [crashkeeper.com] Erlang client"},
+  {description, "Fink [crashdump.io] Erlang client"},
   {vsn, "1"},
   {registered, [lager_fink_backend, error_logger_fink_h, fink_app, fink_sup]},
   {modules, []},

@@ -172,3 +172,26 @@ disconnect({udp, #state{socket = Socket}}) ->
     end;
 disconnect({_, _State}) ->
     ok.
+
+
+
+
+message(Error, Reason) ->
+    Stacktrace = erlang:get_stacktrace(),
+    Msg = message(Error, Reason, Stacktrace),
+    Message = [{title,  list_to_binary(Msg)},
+               {error,  list_to_binary(io_lib:format("~s", [Error]))},
+               {reason, list_to_binary(io_lib:format("~s", [Reason]))},
+               {stacktrace, list_to_binary(io_lib:format("~p", [Stacktrace]))}],
+    {Stacktrace, Message}.
+
+message(throw, Reason, _) ->
+    io_lib:format("throw(~p)", [Reason]);
+message(error, Type, Stacktrace) ->
+    [{Module, Operator, Args, _}|_Stack] = Stacktrace,
+    Args1 = lists:last(io_lib:format("~p", [Args])),
+    Args2 = string:sub_string(Args1, 2, string:len(Args1) - 1),
+    Msg = io_lib:format("~s - ~p:~p(~s)~n", [Type, Module, Operator, Args2]),
+    re:replace(Msg, "\n", "", [global]);
+message(Error, Reason, _Sx) ->
+    io_lib:format("~s -> ~s", [Error, Reason]).

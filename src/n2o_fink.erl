@@ -3,5 +3,10 @@
 -compile(export_all).
 -export(?FAULTER_API).
 
-stack() -> n2o_error:stack().
-error_page(Class, Error) -> n2o_error:error_page(Class, Error).
+stack(Error, Reason) ->
+    fink:n2o_push(Error, Reason),
+    n2o_error:stack(Error, Reason).
+
+error_page(Class, Error) ->
+    fink:n2o_push(Class, Error),
+    n2o_error:error_page(Class, Error).

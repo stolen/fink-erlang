@@ -24,7 +24,7 @@ fcatch(Fun, OnError) ->
 push(Error, Reason) ->
     {Stacktrace, Message} = fink_lib:message(Error, Reason),
     ?MODULE:emit(Message),
-    {Error, Reason, Stacktrace}.
+    [Error, Reason, Stacktrace].
 
 emit(Message) ->
     emit(Message, <<"">>).

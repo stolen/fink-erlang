@@ -17,7 +17,7 @@ fcatch(Fun, OnError) ->
     try
         Fun()
     catch Error:Reason ->
-        {_, _, Stacktrace} = ?MODULE:emit(Error, Reason),
+        {_, _, Stacktrace} = ?MODULE:push(Error, Reason),
         OnError(Error, Reason, Stacktrace)
     end.
 

@@ -4,7 +4,7 @@
               {registered,[lager_fink_backend,error_logger_fink_h,fink_app,
                            fink_sup]},
               {modules,[error_logger_fink_h,fink,fink_app,fink_lib,fink_sup,
-                        lager_fink_backend]},
+                        lager_fink_backend,n2o_fink]},
               {applications,[kernel,stdlib,goldrush,lager]},
               {mod,{fink_app,[]}},
               {env,[]}]}.

@@ -1,19 +1,35 @@
-fink-erlang
------------
+Fink
+----
 
-Fink is an Erlang library for https://crashdump.io
+Fink is an Erlang client for https://crashdump.io. Supports integration with different logging and web frameworks.
 
-
-Supports
---------
+Currently supported:
 
 * error_handler
 * lager
 * n2o
 
+Requirements
+------------
 
-default values
---------------
+Erlang 16+
+
+
+
+
+Installation
+============
+
+
+Add to `rebar.config` file into `deps` list and run `rebar get-deps` in terminal
+
+    {fink, ".*", {git, "git://github.com/crashdumpio/fink-erlang.git", "HEAD"}}
+
+
+Configuration
+=============
+
+fink default settings
 
     [
      {level, info},
@@ -26,8 +42,7 @@ default values
      {port, 31338}
     ]
 
-settings
---------
+To configure fink client you should add to app.config in release directory
 
     {fink, [{level, "info"},
             {retry_interval, 5},
@@ -38,8 +53,7 @@ settings
             {project, "project_name"}]}
 
 
-configure
----------
+or configure it using `application:get_env/1,2`
 
     >application:load(fink),
     >application:set_env(fink, projkect, "project_name"),

@@ -61,11 +61,11 @@ or configure it using `application:get_env/1,2`
     >application:load(start).
 
 
-Configure N2O for to catch all exceptions to crashdump
-------------------------------------------------------
+Configure N2O to catch all exceptions and save to crashdump
+===========================================================
 
     {n2o, [{erroring, n2o_fink}]}.
 
 
-Fink more at examples page (https://github.com/crashdumpio/fink-erlang/tree/master/example)
-or our blog (http://blog.crashdump.io)
+Find more at examples page (https://github.com/crashdumpio/fink-erlang/tree/master/example)
+and our blog (http://blog.crashdump.io)

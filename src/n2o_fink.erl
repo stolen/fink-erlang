@@ -1,7 +1,6 @@
 -module(n2o_fink).
--include_lib("n2o/include/wf.hrl").
 -compile(export_all).
--export(?FAULTER_API).
+-export([stack/2, error_page/2]).
 
 stack(Error, Reason) ->
     fink:push(Error, Reason),

@@ -36,7 +36,8 @@ push(Message) ->
     spawn(fun() ->
         State = fink_lib:new_connection(),
         Conn = fink_lib:connect({State#state.protocol, State}),
-        fink_lib:emit(State#state.level, <<"">>, Message, Conn)
+        Msg = fink_message:prepare_message(State#state.level, "", Message, State),
+        fink_lib:emit(Msg, Conn)
     end).
 
 

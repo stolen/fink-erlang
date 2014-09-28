@@ -25,7 +25,7 @@
          handle_info/2,
          terminate/2,
          code_change/3,
-         lager_message/4]).
+         lager_message/6]).
 
 %% ------------------------------------------------------------------
 %% API Function Definitions
@@ -64,11 +64,11 @@ terminate(_Reason, State) ->
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
-handle_event({log, {lager_msg, Empty, Params, Level, Datetime, S, Message} = K}, State)
+handle_event({log, {lager_msg, Empty, Params, Level, {Date, Time}, S, Message} = K}, State)
 ->
     Allowed = lager_util:level_to_num(Level) =< lager_util:level_to_num(State#state.level),
     case Allowed of
-        true -> spawn(?MODULE, lager_message, [Level, Params, Message, State]);
+        true -> spawn(?MODULE, lager_message, [Level, Params, Date, Time, Message, State]);
         _    -> ok
     end,
     {ok, State};
@@ -83,10 +83,10 @@ handle_event(Event, State) ->
 %% ------------------------------------------------------------------
 
 
-lager_message(Level, Params, Message, State) ->
+lager_message(Level, Params, Date, Time, Message, State) ->
     io:format("log ~p~n", [?MODULE]),
     Location = prepare_location(Params),
-    Msg = fink_message:prepare_message(Level, Location, binary:list_to_bin(Message), State),
+    Msg = fink_message:prepare_message(Level, Date, Time, Location, binary:list_to_bin(Message), State),
     fink_lib:emit(Msg, State).
 
 prepare_location(Params) ->

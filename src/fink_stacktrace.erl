@@ -5,11 +5,9 @@
 
 stacktrace(Error, Reason) ->
     Stacktrace = erlang:get_stacktrace(),
-    Message = [{title,      list_to_binary(stacktrace_title(Error, Reason, Stacktrace))},
-               {error,      list_to_binary(io_lib:format("~s", [Error]))},
-               {reason,     list_to_binary(io_lib:format("~s", [Reason]))},
-               {stacktrace, list_to_binary(io_lib:format("~s", [stacktrace_body(Stacktrace)]))}],
-    {Stacktrace, Message}.
+    Message =  list_to_binary(stacktrace_title(Error, Reason, Stacktrace)),
+    Stckrs = list_to_binary(io_lib:format("~s", [stacktrace_body(Stacktrace)])),
+    {Stacktrace, {stacktrace, Message, Stckrs}}.
 
 
 format_stacktrace([])                 -> [];

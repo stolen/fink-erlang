@@ -5,6 +5,7 @@
                            fink_sup]},
               {modules,[error_logger_fink_h,fink,fink_app,fink_lib,fink_sup,
                         lager_fink_backend,n2o_fink]},
-              {applications,[kernel,stdlib,goldrush,lager]},
+              {applications,[kernel,stdlib,crypto,inets,compiler,syntax_tools,
+                             goldrush]},
               {mod,{fink_app,[]}},
               {env,[]}]}.

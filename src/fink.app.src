@@ -7,6 +7,10 @@
   {applications, [
                   kernel,
                   stdlib,
+                  crypto,
+                  inets,
+                  compiler,
+                  syntax_tools,
                   goldrush
                  ]},
   {mod, { fink_app, []}},

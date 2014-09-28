@@ -40,7 +40,7 @@ start_link() ->
 
 init(_) ->
     State = fink_lib:new_connection(),
-    State1 = fink_lib:connect({State#state.protocol, State}),
+    State1 = fink_lib:connect(State),
     {ok, State1}.
 
 handle_call(get_loglevel, #state{level=Level} = State) ->
@@ -64,17 +64,12 @@ terminate(_Reason, State) ->
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
-handle_event({log, {lager_msg, Empty, Params, Level, {Date, Time}, S, Message} = K}, State)
-->
-    Allowed = lager_util:level_to_num(Level) =< lager_util:level_to_num(State#state.level),
-    case Allowed of
-        true -> spawn(?MODULE, lager_message, [Level, Params, Date, Time, Message, State]);
-        _    -> ok
-    end,
+handle_event({log, {lager_msg, _Data, Params, Level, {Date, Time}, _Timestamp, Message} = _M}, State) when Level =:= State#state.level ->
+    spawn(?MODULE, lager_message, [Level, Params, Date, Time, Message, State]),
     {ok, State};
 
-handle_event(Event, State) ->
-    io:format("event ~p ~p ~n", [Event, ?MODULE]),
+handle_event(_Event, State) ->
+    % ignore
     {ok, State}.
 
 
@@ -83,11 +78,10 @@ handle_event(Event, State) ->
 %% ------------------------------------------------------------------
 
 
-lager_message(Level, Params, Date, Time, Message, State) ->
-    io:format("log ~p~n", [?MODULE]),
+lager_message(Level, Params, Date, Time, Msg, State) ->
     Location = prepare_location(Params),
-    Msg = fink_message:prepare_message(Level, Date, Time, Location, binary:list_to_bin(Message), State),
-    fink_lib:emit(Msg, State).
+    Message = fink_message:prepare_message(Level, Date, Time, Location, binary:list_to_bin(Msg), State),
+    fink_lib:emit(Message, State).
 
 prepare_location(Params) ->
     Application = proplists:get_value(application, Params),

@@ -1,6 +1,8 @@
 -module(fink_message).
 
--export([prepare_message/4]).
+-export([prepare_message/4,
+         prepare_message/5,
+         prepare_message/6]).
 
 -include("fink.hrl").
 
@@ -17,7 +19,7 @@ prepare_message(Level, Date, Time, Location, Message, State) ->
     prepare_message({Level, Datetime, Location, Message, [], State}).
 
 
-prepare_message({_, _, _, _, _, #state{project = undefined}}) ->
+prepare_message({_Level, _Datetime, _Location, _Messafe, _Params, #state{project = undefined}}) ->
     error_logger:error_msg("Fink error. Project is required\n", []),
     ok;
 prepare_message({Level, Datetime, Location, Message, Params, #state{project = Project}}) ->
@@ -44,7 +46,7 @@ prepare_message({Level, Datetime, Location, Message, Params, #state{project = Pr
                {extra,       Extra},
                {http_request, <<"">>}]
         ++ prepare_content(Message),
-
+    % io:format("~p~n", [Content]),
     base64:encode(zlib:compress(jsx:encode(Content))).
 
 

@@ -42,23 +42,25 @@ emit(Message, State, Rt) ->
                       emit(Message, State, Rt - 1)
     end.
 
-push("udp", Message, #state{socket = Socket} = State) ->
+push(udp, Message, #state{socket = Socket} = State) ->
     Msg = io_lib:format("~s\n\n~s", [auth_header(State), Message]),
     case gen_udp:send(Socket, State#state.hostname, 31337, Msg) of
-        {error, Reason} ->
-            error_logger:error_msg("Fink error. Sending[udp] fail: Reason: ~s State: ~p~n\n", [Reason, State]),
-            {error, Reason};
-        _               ->
-            ok
+        {error, Reason} -> push_error("udp", Reason), {error, Reason};
+        _               -> ok
     end;
 
-push(_, Message, #state{url = Url} = State) ->
+push(Protocol, Message, #state{url = Url} = State) ->
     Headers = [{"X-Auth", auth_header(State)}],
     Request = {Url, Headers, "application/json", Message},
     case httpc:request(post, Request, [], [{body_format, binary}]) of
-        {ok, _}         -> ok;
-        {error, Reason} -> {error, Reason}
+        {ok, Resp}      -> % io:format("Success: ~p~n", [Resp]),
+                           ok;
+        {error, Reason} -> push_error(Protocol, Reason), {error, Reason}
     end.
+
+push_error(Protocol, Reason) ->
+    io:format("Fink error. Sending[~s] fail: Reason: ~p~n", [Protocol, Reason]).
+
 
 %% ------------------------------------------------------------------
 %% Connection Function Definitions
@@ -75,34 +77,37 @@ new_connection() ->
            level          = get_settings(level, info),
            retry_interval = get_settings(retry_interval, 5),
            retry_times    = get_settings(retry_times, 5),
-           protocol       = get_settings(protocol, "https"),
+           protocol       = get_settings(protocol, https),
            public_key     = get_settings(public_key),
            secret_key     = get_settings(secret_key),
            project        = get_settings(project),
            hostname       = get_settings(hostname),
-           port           = 31338}.
+           port           = get_settings(port, 31337)}.
 
-connect({"udp", #state{port = Port} = State}) ->
+connect(#state{protocol = Protocol} = State) ->
+    connect({Protocol, State});
+
+connect({udp, #state{port = Port} = State}) ->
     case gen_udp:open(Port, [binary, {active, true}]) of
         {ok, Socket}        ->
             State#state{socket = Socket};
         {error, eaddrinuse} ->
-            connect({"udp", State#state{port = Port + 1}});
+            connect({udp, State#state{port = Port + 1}});
         {error, Reason}     ->
-            error_logger:error_msg("Fink error. Connection[udp] fail: Reason: ~p, State: ~p~n\n", [Reason, State]),
-            connect({"https", State#state{protocol = "https"}})
+            io:format("Fink error. Connection[udp] fail: Reason: ~p~n", [Reason]),
+            connect({https, State#state{protocol = https}})
     end;
-connect({"http", #state{project = Project} = State}) ->
+connect({http, #state{project = Project} = State}) ->
     Url = io_lib:format("http://~s/api/~s/~s/push", [State#state.hostname, ?API_VERSION, Project]),
-    State#state{url = list_to_binary(Url)};
-connect({"https", #state{project = Project} = State}) ->
-    Url = io_lib:format("https://~s/api/~s/~s/push", [State#state.hostname, ?API_VERSION, Project]),
-    State#state{url = list_to_binary(Url)}.
+    State#state{url = binary_to_list(list_to_binary(Url))};
+connect({https, #state{project = Project} = State}) ->
+    Url = io_lib:format("https://~s/api/~s/~p/push", [State#state.hostname, ?API_VERSION, Project]),
+    State#state{url = binary_to_list(list_to_binary(Url))}.
 
 disconnect(#state{protocol = Protocol} = State) ->
     disconnect(Protocol, State).
 
-disconnect("udp", #state{socket = Socket}) ->
+disconnect(udp, #state{socket = Socket}) ->
     case Socket of
         undefined -> ok;
         Socket1 -> gen_udp:close(Socket1), ok

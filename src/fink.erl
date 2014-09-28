@@ -35,11 +35,7 @@ stacktrace(Error, Reason) ->
 push(Message) ->
     spawn(fun() ->
         State = fink_lib:new_connection(),
-        Conn = fink_lib:connect({State#state.protocol, State}),
+        Conn = fink_lib:connect(State),
         Msg = fink_message:prepare_message(State#state.level, "", Message, State),
         fink_lib:emit(Msg, Conn)
     end).
-
-
-% fink:stacktrace(error, undef).
-% fink:fcatch(fun() -> 1/0 end).

@@ -28,28 +28,28 @@
 init(_Args) ->
     process_flag(trap_exit, true),
     State = fink_lib:new_connection(),
-    State1 = fink_lib:connect({State#state.protocol, State}),
+    State1 = fink_lib:connect(State),
     {ok, State1}.
 
-handle_event({error, _Leader, Msg}, #state{error = Level} = State) ->
-    R = ?MODULE:error_logger_emit(Level, Msg, State),
-    {R, State};
-handle_event({info_msg, _Leader, Msg}, #state{info_msg = Level} = State) ->
-    R = ?MODULE:error_logger_emit(Level, Msg, State),
-    {R, State};
-handle_event({warning_msg, _Leader, Msg}, #state{warning_msg = Level} = State) ->
-    R = ?MODULE:error_logger_emit(Level, Msg, State),
-    {R, State};
+handle_event({error, _Leader, Msg}, State) ->
+    spawn(?MODULE, error_logger_message, [error, Msg, State]),
+    {ok, State};
+handle_event({info_msg, _Leader, Msg}, State) ->
+    spawn(?MODULE, error_logger_message, [info, Msg, State]),
+    {ok, State};
+handle_event({warning_msg, _Leader, Msg}, State) ->
+    spawn(?MODULE, error_logger_message, [warning, Msg, State]),
+    {ok, State};
 
-handle_event({error_report, _Leader, Msg}, #state{error_report = Level} = State) ->
-    R = ?MODULE:error_logger_emit(Level, Msg, State),
-    {R, State};
-handle_event({info_report, _Leader, Msg}, #state{info_report = Level} = State) ->
-    R = ?MODULE:error_logger_emit(Level, Msg, State),
-    {R, State};
-handle_event({warning_report, _Leader, Msg}, #state{warning_error = Level} = State) ->
-    R = ?MODULE:error_logger_emit(Level, Msg, State),
-    {R, State}.
+handle_event({error_report, _Leader, Msg}, State) ->
+    spawn(?MODULE, error_logger_message, [error, Msg, State]),
+    {ok, State};
+handle_event({info_report, _Leader, Msg}, State) ->
+    spawn(?MODULE, error_logger_message, [info, Msg, State]),
+    {ok, State};
+handle_event({warning_report, _Leader, Msg}, State) ->
+    spawn(?MODULE, error_logger_message, [warning, Msg, State]),
+    {ok, State}.
 
 % {PID, Msg, Data}
 
@@ -75,11 +75,15 @@ code_change(_OldVsn, State, _Extra) ->
 %% Message Generator
 %% ------------------------------------------------------------------
 
-error_logger_message(Level, {_PID, Msg, Params}, State) ->
+error_logger_message(Level, {_PID, Msg, Params}, State) when Level =:= State#state.level ->
     % Msg pattern, Params - a list of values
     Val = case Params of
               [] -> io_lib:format(Msg, Params);
               _  -> Msg
           end,
-    Message = fink_message:prepare_message(Level, "", Val, [], State),
-    fink_lib:emit(Level, "", Message, State).
+    Message = fink_message:prepare_message(Level, "", Val, State),
+    fink_lib:emit(Message, State),
+    ok;
+error_logger_message(_Level, _Msg, _State) ->
+    % ignore
+    ok.

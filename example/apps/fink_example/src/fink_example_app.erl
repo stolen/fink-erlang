@@ -9,15 +9,23 @@
 %% Application callbacks
 %% ===================================================================
 
-
+setup_fink() ->
+    Config = [{identity, <<"x">>},
+              {level, error},
+              {retry_times, 5},
+              {retry_interval, 3},
+              {protocol, "https"},
+              {public_key, "88ce5225fdeff6618f7f19d31b405f8d"},
+              {secret_key, "1c26593735770970d19d7e65e752212f"},
+              {project, "ck_internal"}],
+    [application:set_env(fink, Name, Value) || {Name, Value} <- Config],
+    ok.
 
 start() ->
-    application:start(sasl),
-    application:start(lager),
-    application:start(fink_example),
-
-    {ok, Settings} = application:get_env(fink_example, lager_fink_backend),
-    gen_event:add_handler(lager_event, lager_fink_backend, Settings).
+    application:ensure_all_started(fink_example),
+    setup_fink(),
+    fink:add_lager_backend(),
+    ok.
 
 start(_StartType, _StartArgs) ->
     fink_example_sup:start_link().

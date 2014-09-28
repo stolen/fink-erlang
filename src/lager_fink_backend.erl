@@ -24,7 +24,8 @@
          handle_cast/2,
          handle_info/2,
          terminate/2,
-         code_change/3]).
+         code_change/3,
+         lager_message/4]).
 
 %% ------------------------------------------------------------------
 %% API Function Definitions
@@ -38,7 +39,7 @@ start_link() ->
 %% ------------------------------------------------------------------
 
 init(_) ->
-    State = fink_lib:new_state(),
+    State = fink_lib:new_connection(),
     State1 = fink_lib:connect({State#state.protocol, State}),
     {ok, State1}.
 
@@ -57,18 +58,40 @@ handle_cast(_Msg, State) ->
 handle_info(_Info, State) ->
     {noreply, State}.
 
-terminate(_Reason, #state{protocol = Protocol} = State) ->
-    fink_lib:disconnect({Protocol, State}),
-    ok.
+terminate(_Reason, State) ->
+    fink_lib:disconnect(State).
 
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
-handle_event({log, Level, {Date, Time}, [LevelStr, Location, Message]},
-             #state{retry_times = RetryTimes} = State)
-  when Level =< State#state.level ->
-    spawn(fink_lib, emit, [lager_util:num_to_level(Level), Date, Time, LevelStr, Location, Message, State, RetryTimes]),
+handle_event({log, {lager_msg, Empty, Params, Level, Datetime, S, Message} = K}, State)
+->
+    Allowed = lager_util:level_to_num(Level) =< lager_util:level_to_num(State#state.level),
+    case Allowed of
+        true -> spawn(?MODULE, lager_message, [Level, Params, Message, State]);
+        _    -> ok
+    end,
     {ok, State};
 
-handle_event(_Event, State) ->
+handle_event(Event, State) ->
+    io:format("event ~p ~p ~n", [Event, ?MODULE]),
     {ok, State}.
+
+
+%% ------------------------------------------------------------------
+%% Message Generator
+%% ------------------------------------------------------------------
+
+
+lager_message(Level, Params, Message, State) ->
+    io:format("log ~p~n", [?MODULE]),
+    Location = prepare_location(Params),
+    Msg = fink_message:prepare_message(Level, Location, binary:list_to_bin(Message), State),
+    fink_lib:emit(Msg, State).
+
+prepare_location(Params) ->
+    Application = proplists:get_value(application, Params),
+    Module      = proplists:get_value(module, Params),
+    Function    = proplists:get_value(function, Params),
+    Line        = proplists:get_value(line, Params),
+    io_lib:format("~p/~p:~p:~p", [Application, Module, Function, Line]).

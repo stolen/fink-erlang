@@ -1,8 +1,5 @@
 -module(fink_lib).
 
--define(CLIENT, "lager_fink_backend/0.0.2").
--define(API_VERSION, "v1").
-
 %% ------------------------------------------------------------------
 %% Includes
 %% ------------------------------------------------------------------
@@ -53,7 +50,7 @@ push(Protocol, Message, #state{url = Url} = State) ->
     Headers = [{"X-Auth", auth_header(State)}],
     Request = {Url, Headers, "application/json", Message},
     case httpc:request(post, Request, [], [{body_format, binary}]) of
-        {ok, Resp}      -> % io:format("Success: ~p~n", [Resp]),
+        {ok, Resp}      -> %io:format("Success: ~p~n", [Resp]),
                            ok;
         {error, Reason} -> push_error(Protocol, Reason), {error, Reason}
     end.

@@ -32,6 +32,7 @@ prepare_message({Level, Datetime, Location, Message, Params, #state{project = Pr
 
     Content = [{level,       atom_to_binary(Level, latin1)},
                {platform,    <<"erlang">>},
+               {client,      binary:list_to_bin(?CLIENT)},
                %% {paths,       lists:map(fun list_to_binary/1, Paths)},
                %% {module_info, os:module_info()},
 

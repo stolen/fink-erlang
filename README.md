@@ -3,17 +3,23 @@ Fink
 
 Fink is an Erlang client for https://crashdump.io. Supports integration with different logging and web frameworks.
 
-Currently supported:
-=======
+Currently supported
+===================
 
 * error_handler
 * lager
 * n2o
 
+Example
+=======
+
+https://github.com/crashdumpio/fink-erlang/tree/master/example
+
+
 Requirements
 ------------
 
-Erlang 16+
+Erlang 17+
 
 
 Installation
@@ -45,10 +51,10 @@ To configure fink client you should add to app.config in release directory
 
 Configure sys.config
 
-    {fink, [{level, "info"},
+    {fink, [{level, info},
             {retry_interval, 5},
             {retry_times, 5},
-            {protocol, "https"},
+            {protocol, https},
             {public_key, "public_key"},
             {secret_key, "secret_key"},
             {project, "project_name"}]}

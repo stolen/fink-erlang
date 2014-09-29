@@ -15,18 +15,18 @@ setup_fink() ->
               {retry_times, 5},
               {retry_interval, 3},
               {protocol, http},
-              {hostname,  "localhost:8000"},
-              {public_key, "88ce5225fdeff6618f7f19d31b405f8d"},
-              {secret_key, "1c26593735770970d19d7e65e752212f"},
-              {project, "ck_internal"}],
+              {hostname,  "local.crashdump.io:8001"},
+              {public_key, "43d72345f25d41a8115be4fd73aa1b01"},
+              {secret_key, "2091feb7d0f04ff81a3504686b2715db"},
+              {project, "python_dash_f7786e8"}],
     [application:set_env(fink, Name, Value) || {Name, Value} <- Config],
     ok.
 
 start() ->
     application:ensure_all_started(fink_example),
     setup_fink(),
-    fink:add_sasl_handler(),
-    %fink:add_lager_backend(),
+    %fink:add_sasl_handler(),
+    fink:add_lager_backend(),
     ok.
 
 start(_StartType, _StartArgs) ->

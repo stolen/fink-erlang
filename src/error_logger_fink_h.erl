@@ -92,7 +92,6 @@ error_logger_message(Level, {_PID, Msg, Params}, State) when Level =:= State#sta
 error_logger_message(_Level, _Msg, _State) ->
     %io:format("missed report: ~p ~p~n", [Level, Msg]),
     ok.
-
 error_logger_emit(Level, Location, Content, State) ->
     Message = fink_message:prepare_message(Level, Location, Content, State),
     fink_lib:emit(Message, State),
@@ -110,23 +109,14 @@ format_value(Msg, [])     -> io_lib:format(Msg, []);
 format_value(Msg, _Params) -> Msg.
 
 
-format_report(Out) -> format_report([], Out).
-
+format_report(Out)     -> format_report([], Out).
 format_report(Out, []) -> list_to_binary(Out);
-
 format_report(Out, [{initial_call, {Module, Func, Args}}|Report]) ->
-
     FRow = io_lib:format("~p: ~p/~p~n", [Module, Func, length(Args)]),
     format_report(Out ++ FRow, Report);
-
 format_report(Out, [{error_info, _Value}|Report]) ->
-    %{_, Stacktrace} = format_stacktrace(Value),
-    %FRow = io_lib:format("exception error: ~p~n",[Stacktrace]), % format properly
     FRow = "",
     format_report(Out ++ FRow, Report);
-
 format_report(Out, [{Field, Value}|Report]) ->
-
     FRow = io_lib:format("~p: ~p~n", [Field, Value]),
-
     format_report(Out ++ FRow, Report).

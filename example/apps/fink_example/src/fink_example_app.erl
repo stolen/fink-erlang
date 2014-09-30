@@ -25,8 +25,8 @@ setup_fink() ->
 start() ->
     application:ensure_all_started(fink_example),
     setup_fink(),
-    %fink:add_sasl_handler(),
-    fink:add_lager_backend(),
+    fink:add_sasl_handler(),
+    %fink:add_lager_backend(),
     ok.
 
 start(_StartType, _StartArgs) ->

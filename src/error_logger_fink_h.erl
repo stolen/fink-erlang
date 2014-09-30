@@ -75,15 +75,56 @@ code_change(_OldVsn, State, _Extra) ->
 %% Message Generator
 %% ------------------------------------------------------------------
 
-error_logger_message(Level, {_PID, Msg, Params}, State) when Level =:= State#state.level ->
-    % Msg pattern, Params - a list of values
-    Val = case Params of
-              [] -> io_lib:format(Msg, Params);
-              _  -> Msg
-          end,
-    Message = fink_message:prepare_message(Level, "", Val, State),
-    fink_lib:emit(Message, State),
+error_logger_message(Level, {_PID, crash_report, [Report, _Smtng]}, State) when Level =:= State#state.level ->
+    {Message, Stacktrace} = format_stacktrace(proplists:get_value(error_info, Report, [])),
+    Report1 = format_report(Report),
+    Message1 = {error_report, Message, Report1, Stacktrace},
+    error_logger_emit(Level, "", Message1, State),
     ok;
-error_logger_message(_Level, _Msg, _State) ->
-    % ignore
+
+% Msg pattern, Params - a list of values
+error_logger_message(Level, {_PID, Msg, Params}, State) when Level =:= State#state.level ->
+    Message = format_value(Msg, Params),
+    error_logger_emit(Level, "", Message, State),
+    ok;
+error_logger_message(Level, Msg, _State) ->
+    io:format("mised report: ~p ~p~n", [Level, Msg]),
     ok.
+
+error_logger_emit(Level, Location, Message, State) ->
+    Message1 = fink_message:prepare_message(Level, Location, Message, State),
+    fink_lib:emit(Message1, State),
+    ok.
+
+
+format_stacktrace({Error, Reason, Stacktrace}) ->
+    {fink_stacktrace:stacktrace_title(Error, Reason, Stacktrace),
+     fink_stacktrace:stacktrace_body(Stacktrace)};
+format_stacktrace([]) ->
+    {<<"">>, <<"">>}.
+
+
+format_value(Msg, [])     -> io_lib:format(Msg, []);
+format_value(Msg, _Params) -> Msg.
+
+
+format_report(Out) -> format_report([], Out).
+
+format_report(Out, []) -> list_to_binary(Out);
+
+format_report(Out, [{initial_call, {Module, Func, Args}}|Report]) ->
+
+    FRow = io_lib:format("~p: ~p/~p~n", [Module, Func, length(Args)]),
+    format_report(Out ++ FRow, Report);
+
+format_report(Out, [{error_info, _Value}|Report]) ->
+    %{_, Stacktrace} = format_stacktrace(Value),
+    %FRow = io_lib:format("exception error: ~p~n",[Stacktrace]), % format properly
+    FRow = "",
+    format_report(Out ++ FRow, Report);
+
+format_report(Out, [{Field, Value}|Report]) ->
+
+    FRow = io_lib:format("~p: ~p~n", [Field, Value]),
+
+    format_report(Out ++ FRow, Report).

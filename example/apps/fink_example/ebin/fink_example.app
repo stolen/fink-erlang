@@ -3,7 +3,7 @@
               {vsn,"1"},
               {registered,[]},
               {applications,[kernel,stdlib,compiler,syntax_tools,inets,
-                             goldrush,lager]},
+                             goldrush]},
               {mod,{fink_example_app,[]}},
               {env,[]},
               {modules,[fink_example_app,fink_example_sup,texample]}]}.

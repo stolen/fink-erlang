@@ -9,8 +9,7 @@
                   compiler,
                   syntax_tools,
                   inets,
-                  goldrush,
-                  lager
+                  goldrush
                  ]},
   {mod, { fink_example_app, []}},
   {env, []}

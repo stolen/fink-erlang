@@ -26,35 +26,39 @@ prepare_message({Level, Datetime, Location, Message, Params, #state{project = Pr
     %% {ok, Paths} = erl_prim_loader:get_path(),
     %% {Platform, Kernel} = os:type(),
     {ok, Hostname} = inet:gethostname(),
-    Extra = [{memory, erlang:memory()},
-             {node,   atom_to_binary(erlang:node(), latin1)},
-             {pid,    binary:list_to_bin(os:getpid())}] ++ Params,
+    Extra = [{<<"memory">>, erlang:memory()},
+             {<<"node">>,   atom_to_binary(erlang:node(), latin1)},
+             {<<"pid">>,    binary:list_to_bin(os:getpid())}] ++ Params,
 
-    Content = [{level,       atom_to_binary(Level, latin1)},
-               {platform,    <<"erlang">>},
-               {client,      binary:list_to_bin(?CLIENT)},
+    Content = [{<<"level">>,       atom_to_binary(Level, latin1)},
+               {<<"platform">>,    <<"erlang">>},
+               {<<"client">>,      binary:list_to_bin(?CLIENT)},
                %% {paths,       lists:map(fun list_to_binary/1, Paths)},
                %% {module_info, os:module_info()},
 
-               {location,    binary:list_to_bin(Location)},
-               {server_name, binary:list_to_bin(Hostname)},
-               {version,     binary:list_to_bin(element(1, init:script_id()))},
+               {<<"location">>,    binary:list_to_bin(Location)},
+               {<<"server_name">>, binary:list_to_bin(Hostname)},
+               {<<"version">>,     binary:list_to_bin(element(2, init:script_id()))},
 
                %% {os_type,     io_lib:format("~s~s", [Platform, Kernel])},
-               {pwd,         binary:list_to_bin(os:getenv("PWD"))},
-               {project,     binary:list_to_bin(Project)},
-               {timestamp,   binary:list_to_bin(Datetime)},
-               {extra,       Extra},
-               {http_request, <<"">>}]
+               {<<"pwd">>,         binary:list_to_bin(os:getenv("PWD"))},
+               {<<"project">>,     binary:list_to_bin(Project)},
+               {<<"timestamp">>,   binary:list_to_bin(Datetime)},
+               {<<"extra">>,       Extra},
+               {<<"http_request">>, <<"">>}]
         ++ prepare_content(Message),
-    % io:format("~p~n", [Content]),
+    %io:format("~p~n", [Content]),
     base64:encode(zlib:compress(jsx:encode(Content))).
 
 
 prepare_content({stacktrace, Message, Stacktrace}) ->
-    [{stacktrace,  Stacktrace},
-     {message,     Message}];
+    [{<<"stacktrace">>,   Stacktrace},
+     {<<"message">>,      Message}];
+prepare_content({error_report, Message, Report, Stacktrace}) ->
+    [{<<"error_report">>, Report},
+     {<<"stacktrace">>,   Stacktrace},
+     {<<"message">>,      Message}];
 prepare_content(Message) when is_binary(Message) ->
-    [{message,     Message}];
+    [{<<"message">>,      Message}];
 prepare_content(Message) ->
-    [{message,     Message}].
+    [{<<"message">>,      Message}].

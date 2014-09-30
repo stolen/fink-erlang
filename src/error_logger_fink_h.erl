@@ -78,22 +78,24 @@ code_change(_OldVsn, State, _Extra) ->
 error_logger_message(Level, {_PID, crash_report, [Report, _Smtng]}, State) when Level =:= State#state.level ->
     {Message, Stacktrace} = format_stacktrace(proplists:get_value(error_info, Report, [])),
     Report1 = format_report(Report),
-    Message1 = {error_report, Message, Report1, Stacktrace},
-    error_logger_emit(Level, "", Message1, State),
+    Content = [{<<"message">>, Message},
+               {<<"error_report">>, Report1},
+               {<<"stacktrace">>, Stacktrace}],
+    error_logger_emit(Level, "", Content, State),
     ok;
 
 % Msg pattern, Params - a list of values
 error_logger_message(Level, {_PID, Msg, Params}, State) when Level =:= State#state.level ->
-    Message = format_value(Msg, Params),
-    error_logger_emit(Level, "", Message, State),
+    Content = [{<<"message">>, format_value(Msg, Params)}],
+    error_logger_emit(Level, "", Content, State),
     ok;
-error_logger_message(Level, Msg, _State) ->
-    io:format("mised report: ~p ~p~n", [Level, Msg]),
+error_logger_message(_Level, _Msg, _State) ->
+    %io:format("missed report: ~p ~p~n", [Level, Msg]),
     ok.
 
-error_logger_emit(Level, Location, Message, State) ->
-    Message1 = fink_message:prepare_message(Level, Location, Message, State),
-    fink_lib:emit(Message1, State),
+error_logger_emit(Level, Location, Content, State) ->
+    Message = fink_message:prepare_message(Level, Location, Content, State),
+    fink_lib:emit(Message, State),
     ok.
 
 

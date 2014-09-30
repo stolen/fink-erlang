@@ -44,21 +44,6 @@ prepare_message({Level, Datetime, Location, Message, Params, #state{project = Pr
                {<<"pwd">>,         binary:list_to_bin(os:getenv("PWD"))},
                {<<"project">>,     binary:list_to_bin(Project)},
                {<<"timestamp">>,   binary:list_to_bin(Datetime)},
-               {<<"extra">>,       Extra},
-               {<<"http_request">>, <<"">>}]
-        ++ prepare_content(Message),
+               {<<"extra">>,       Extra}] ++ Message,
     %io:format("~p~n", [Content]),
     base64:encode(zlib:compress(jsx:encode(Content))).
-
-
-prepare_content({stacktrace, Message, Stacktrace}) ->
-    [{<<"stacktrace">>,   Stacktrace},
-     {<<"message">>,      Message}];
-prepare_content({error_report, Message, Report, Stacktrace}) ->
-    [{<<"error_report">>, Report},
-     {<<"stacktrace">>,   Stacktrace},
-     {<<"message">>,      Message}];
-prepare_content(Message) when is_binary(Message) ->
-    [{<<"message">>,      Message}];
-prepare_content(Message) ->
-    [{<<"message">>,      Message}].

@@ -80,7 +80,8 @@ handle_event(_Event, State) ->
 
 lager_message(Level, Params, Date, Time, Msg, State) ->
     Location = prepare_location(Params),
-    Message = fink_message:prepare_message(Level, Date, Time, Location, binary:list_to_bin(Msg), State),
+    Content = [{<<"message">>, binary:list_to_bin(Msg)}],
+    Message = fink_message:prepare_message(Level, Date, Time, Location, Content, State),
     fink_lib:emit(Message, State).
 
 prepare_location(Params) ->

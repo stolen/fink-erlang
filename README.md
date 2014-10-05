@@ -37,6 +37,13 @@ n2o
 >try lists:map(1, 0) catch E:R -> wf:error_page(E,R) end.
 ```
 
+fink
+----
+
+```
+>fink:push("help, there is a bug!").
+```
+
 Example
 =======
 

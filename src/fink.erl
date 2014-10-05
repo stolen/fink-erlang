@@ -10,8 +10,8 @@
 
 add_lager_backend()    -> gen_event:add_handler(lager_event, lager_fink_backend, []).
 
-add_sasl_handler(Args) -> error_logger:add_report_handler(error_logger_fink_h, Args).
-add_sasl_handler()     -> error_logger:add_report_handler(error_logger_fink_h, []).
+add_sasl_backend(Args) -> error_logger:add_report_handler(error_logger_fink_h, Args).
+add_sasl_backend()     -> error_logger:add_report_handler(error_logger_fink_h, []).
 
 
 % catch function -> Result | error

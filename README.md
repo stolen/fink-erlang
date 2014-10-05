@@ -18,7 +18,8 @@ error_handler
 
 ```
 >fink:add_sasl_backend().
->fink:fcatch(fun() -> 1/0 end).
+>error_logger:error_msg("HELP").
+
 ```
 
 lager
@@ -41,6 +42,8 @@ fink
 ----
 
 ```
+>fink:fcatch(fun() -> 1/0 end).
+# or
 >fink:push("help, there is a bug!").
 ```
 

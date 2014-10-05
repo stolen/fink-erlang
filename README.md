@@ -85,25 +85,25 @@ Installation
 Add to `rebar.config` file into `deps` list and run `rebar get-deps` in terminal
 
 ```erlang
-    {fink, ".*", {git, "git://github.com/crashdumpio/fink-erlang.git", "HEAD"}}
+{fink, ".*", {git, "git://github.com/crashdumpio/fink-erlang.git", "HEAD"}}
 ```
 
 Configuration
 =============
 
-fink default settings
+Fink default settings
 
 ```erlang
-    [
-     {level, info},
-     {retry_interval, 5},
-     {retry_times, 5},
-     {protocol, http},
-     {public_key, undefined},
-     {secret_key, undefined},
-     {project, undefined},
-     {port, 31338}
-    ]
+[
+ {level, info},
+ {retry_interval, 5},
+ {retry_times, 5},
+ {protocol, http},
+ {public_key, undefined},
+ {secret_key, undefined},
+ {project, undefined},
+ {port, 31338}
+]
 ```
 
 To configure fink client you should add to app.config in release directory

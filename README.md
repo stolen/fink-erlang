@@ -16,7 +16,7 @@ Getting started
 SASL (error_handler) (http://www.erlang.org/doc/man/sasl_app.html)
 ---
 
-```
+```erlang
 >fink:add_sasl_backend().
 >error_logger:error_msg("HELP").
 
@@ -25,7 +25,7 @@ SASL (error_handler) (http://www.erlang.org/doc/man/sasl_app.html)
 Lager (https://github.com/basho/lager)
 ---
 
-```
+```erlang
 >fink:add_lager_backend().
 >lager:error("BOOM").
 ```
@@ -33,7 +33,7 @@ Lager (https://github.com/basho/lager)
 N2O (https://synrc.com/apps/n2o/)
 ---
 
-```
+```erlang
 >application:set_env(n2o, erroring, n2o_fink).
 >try lists:map(1, 0) catch E:R -> wf:error_page(E,R) end.
 ```
@@ -54,12 +54,12 @@ YAWS (http://yaws.hyber.org/)
 
 Use SASL example
 
-fink (http://docs.crashdump.io/libraries/erlang.html)
+Fink (http://docs.crashdump.io/libraries/erlang.html)
 ----
 
-```
+```erlang
 >fink:fcatch(fun() -> 1/0 end).
-# or
+% or
 >fink:push("help, there is a bug!").
 ```
 

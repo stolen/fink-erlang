@@ -81,14 +81,16 @@ Installation
 
 Add to `rebar.config` file into `deps` list and run `rebar get-deps` in terminal
 
+```erlang
     {fink, ".*", {git, "git://github.com/crashdumpio/fink-erlang.git", "HEAD"}}
-
+```
 
 Configuration
 =============
 
 fink default settings
 
+```erlang
     [
      {level, info},
      {retry_interval, 5},
@@ -99,32 +101,29 @@ fink default settings
      {project, undefined},
      {port, 31338}
     ]
+```
 
 To configure fink client you should add to app.config in release directory
 
 Configure sys.config
 
-    {fink, [{level, info},
-            {retry_interval, 5},
-            {retry_times, 5},
-            {protocol, https},
-            {public_key, "public_key"},
-            {secret_key, "secret_key"},
-            {project, "project_name"}]}
+```erlang
+{fink, [{level, info},
+        {retry_interval, 5},
+        {retry_times, 5},
+        {protocol, https},
+        {public_key, "public_key"},
+        {secret_key, "secret_key"},
+        {project, "project_name"}]}
+```
 
+or configure it using `application:get_env/2,3`
 
-or configure it using `application:get_env/1,2`
-
-    >application:load(fink),
-    >application:set_env(fink, project, "project_name"),
-    >application:load(start).
-
-
-Configure N2O to catch all exceptions and save to crashdump
-===========================================================
-
-    {n2o, [{erroring, n2o_fink}]}.
-
+```erlang
+>application:load(fink),
+>application:set_env(fink, project, "project_name"),
+>application:load(start).
+```
 
 Find more at examples page (https://github.com/crashdumpio/fink-erlang/tree/master/example)
 and our blog (http://blog.crashdump.io)

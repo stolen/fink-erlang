@@ -13,7 +13,7 @@ Currently supported
 Getting started
 ===============
 
-SASL (error_handler)
+SASL (error_handler) (http://www.erlang.org/doc/man/sasl_app.html)
 ---
 
 ```
@@ -22,7 +22,7 @@ SASL (error_handler)
 
 ```
 
-lager
+Lager (https://github.com/basho/lager)
 ---
 
 ```
@@ -30,7 +30,7 @@ lager
 >lager:error("BOOM").
 ```
 
-n2o
+N2O (https://synrc.com/apps/n2o/)
 ---
 
 ```
@@ -38,23 +38,23 @@ n2o
 >try lists:map(1, 0) catch E:R -> wf:error_page(E,R) end.
 ```
 
-chicago boss
+Chicago Boss (http://www.chicagoboss.org/)
 ---
 
 Use lager example
 
 
-Nitrogen
+Nitrogen (http://nitrogenproject.com/)
 ---
 
 Use SASL example
 
-YAWS
+YAWS (http://yaws.hyber.org/)
 ---
 
 Use SASL example
 
-fink
+fink (http://docs.crashdump.io/libraries/erlang.html)
 ----
 
 ```

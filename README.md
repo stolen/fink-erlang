@@ -10,6 +10,26 @@ Currently supported
 * lager
 * n2o
 
+Getting started
+===============
+
+error_handler
+-------------
+
+  >fink:add_sasl_backend().
+  >fink:fcatch(fun() -> 1/0 end).
+
+lager
+-----
+
+  >fink:add_lager_backend().
+  >lager:error("BOOM").
+
+n2o
+---
+  >application:set_env(n2o, erroring, n2o_fink).
+  >try lists:map(1, 0) catch E:R -> wf:error_page(E,R) end.
+
 Example
 =======
 

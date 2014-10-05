@@ -13,8 +13,8 @@ Currently supported
 Getting started
 ===============
 
-error_handler
--------------
+SASL (error_handler)
+---
 
 ```
 >fink:add_sasl_backend().
@@ -23,7 +23,7 @@ error_handler
 ```
 
 lager
------
+---
 
 ```
 >fink:add_lager_backend().
@@ -37,6 +37,22 @@ n2o
 >application:set_env(n2o, erroring, n2o_fink).
 >try lists:map(1, 0) catch E:R -> wf:error_page(E,R) end.
 ```
+
+chicago boss
+---
+
+Use lager example
+
+
+Nitrogen
+---
+
+Use SASL example
+
+YAWS
+---
+
+Use SASL example
 
 fink
 ----

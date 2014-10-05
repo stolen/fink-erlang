@@ -6,9 +6,12 @@ Fink is an Erlang client for https://crashdump.io. Supports integration with dif
 Currently supported
 ===================
 
-* error_handler
-* lager
-* n2o
+* SASL (error_handler)
+* Lager
+* N2O
+* Chicago Boss
+* Nitrogen
+* YAWS
 
 Getting started
 ===============

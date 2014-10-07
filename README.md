@@ -3,8 +3,8 @@ Fink
 
 Fink is an Erlang client for https://crashdump.io. Supports integration with different logging and web frameworks.
 
-Currently supported
-===================
+Supported frameworks
+====================
 
 * SASL (error_handler)
 * Lager

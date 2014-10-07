@@ -70,15 +70,15 @@ auth_header(#state{public_key = PublicKey, secret_key = SecretKey}) ->
     ).
 
 new_connection() ->
-    #state{identity       = get_settings(id),
-           level          = get_settings(level, info),
+    #state{identity       = get_settings(id, <<"erlang-fink">>),
+           level          = get_settings(level, error),
            retry_interval = get_settings(retry_interval, 5),
            retry_times    = get_settings(retry_times, 5),
            protocol       = get_settings(protocol, https),
            public_key     = get_settings(public_key),
            secret_key     = get_settings(secret_key),
            project        = get_settings(project),
-           hostname       = get_settings(hostname),
+           hostname       = get_settings(hostname, "crashdump.io"),
            port           = get_settings(port, 31337)}.
 
 connect(#state{protocol = Protocol} = State) ->

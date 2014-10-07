@@ -10,15 +10,11 @@
 %% ===================================================================
 
 setup_fink() ->
-    Config = [{identity, <<"x">>},
-              {level, error},
-              {retry_times, 5},
-              {retry_interval, 3},
-              {protocol, http},
-              {hostname,  "local.crashdump.io:8001"},
-              {public_key, "43d72345f25d41a8115be4fd73aa1b01"},
-              {secret_key, "2091feb7d0f04ff81a3504686b2715db"},
-              {project, "python_dash_f7786e8"}],
+    Config = [
+      {project,    "fink_test_4e437d4"},
+      {public_key, "a061b6696b38177ab4353589b60fc223"},
+      {secret_key, "ca5141f4056cdd5f2501e9822616894c"}
+    ],
     [application:set_env(fink, Name, Value) || {Name, Value} <- Config],
     ok.
 

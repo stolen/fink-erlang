@@ -36,14 +36,15 @@ Lager (https://github.com/basho/lager)
 N2O (https://synrc.com/apps/n2o/)
 ---
 
-N2O integration module requires an additional compilation flags.
+N2O integration module requires an additional compilation flag
+
 
 ```
 erlc -Dfink_n2o
 ```
 or
 
-`rebar.config`:
+Add into a `rebar.config` file
 
 ```erlang
   {erl_opts, [{d, fink_n2o}]}.

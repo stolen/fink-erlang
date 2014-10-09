@@ -28,15 +28,21 @@ fcatch(Fun, OnError) ->
     end.
 
 stacktrace(Error, Reason) ->
+    stacktrace(Error, Reason, [])
+
+stacktrace(Error, Reason, Meta) when is_list(Meta) ->
     {Stacktrace, Message} = fink_stacktrace:stacktrace(Error, Reason),
-    ?MODULE:push(Message),
+    ?MODULE:push(Message, Meta),
     [Error, Reason, Stacktrace].
 
 push(Message) ->
+    push(Message, []).
+
+push(Message, Meta) when is_list(Meta) ->
     spawn(fun() ->
         State = fink_lib:new_connection(),
         Conn = fink_lib:connect(State),
         Content = [{<<"message">>, Message}],
-        Msg = fink_message:prepare_message(State#state.level, "", Content, State),
+        Msg = fink_message:prepare_message(State#state.level, "", Content, Meta, State),
         fink_lib:emit(Msg, Conn)
     end).

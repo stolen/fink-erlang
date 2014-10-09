@@ -28,7 +28,7 @@ fcatch(Fun, OnError) ->
     end.
 
 stacktrace(Error, Reason) ->
-    stacktrace(Error, Reason, [])
+    stacktrace(Error, Reason, []).
 
 stacktrace(Error, Reason, Meta) when is_list(Meta) ->
     {Stacktrace, Message} = fink_stacktrace:stacktrace(Error, Reason),

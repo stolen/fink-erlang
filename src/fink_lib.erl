@@ -50,8 +50,8 @@ push(Protocol, Message, #state{url = Url} = State) ->
     Headers = [{"X-Auth", auth_header(State)}],
     Request = {Url, Headers, "application/json", Message},
     case httpc:request(post, Request, [], [{body_format, binary}]) of
-        {ok, Resp}      -> %io:format("Success: ~p~n", [Resp]),
-                           ok;
+        {ok, _Resp}      -> %io:format("Success: ~p~n", [Resp]),
+                            ok;
         {error, Reason} -> push_error(Protocol, Reason), {error, Reason}
     end.
 

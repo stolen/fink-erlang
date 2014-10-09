@@ -2,22 +2,8 @@
 -compile(export_all).
 -export([stack/2, error_page/2]).
 
-% API
-
-stack(Error, Reason) ->
-    fink:stacktrace(Error, Reason, get_custom_info()),
-    n2o_error:stack(Error, Reason).
-
-error_page(Class, Error) ->
-    fink:stacktrace(Class, Error, get_custom_info()),
-    n2o_error:error_page(Class, Error).
-
-% Internal
-get_custom_info() ->
-    [
-     {<<"request">>, get_request_info()}
-    ].
-
+-ifdef(fink_n2o).
+-include_lib("n2o/include/wf.hrl").
 get_request_info() ->
     Req = wf_context:context(),
     {{Session, _}, _, _, _, _} = Req#cx.session,
@@ -40,3 +26,24 @@ get_request_info() ->
      {<<"session">>, Session},
      {<<"peer">>, Peer},
      {<<"headers">>, Headers}].
+-else.
+get_request_info() ->
+    [].
+-endif.
+
+
+% Internal
+get_custom_info() ->
+    [
+     {<<"request">>, get_request_info()}
+    ].
+
+% API
+
+stack(Error, Reason) ->
+    fink:stacktrace(Error, Reason, get_custom_info()),
+    n2o_error:stack(Error, Reason).
+
+error_page(Class, Error) ->
+    fink:stacktrace(Class, Error, get_custom_info()),
+    n2o_error:error_page(Class, Error).
